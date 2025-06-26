@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  external-import-service:
+    build: ./external-import-service
+  check-service:
+    build: ./check-service
+    ports:
+      - "3002:3002"
