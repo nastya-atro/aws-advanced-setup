@@ -1,0 +1,13 @@
+{
+  "name": "fetcher",
+  "version": "1.0.0",
+  "description": "Lambda function to fetch raw earthquake data.",
+  "main": "app.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.50.0",
+    "axios": "^1.10.0",
+    "moment": "^2.30.1"
+  }
+}
