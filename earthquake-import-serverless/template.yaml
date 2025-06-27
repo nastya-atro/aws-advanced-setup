@@ -99,6 +99,9 @@ Resources:
             BucketName: !Ref RawDataBucket
         - DynamoDBWritePolicy:
             TableName: !Ref EarthquakeDataTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref EarthquakeDataTable
       Events:
         SnsNotification:
           Type: SNS

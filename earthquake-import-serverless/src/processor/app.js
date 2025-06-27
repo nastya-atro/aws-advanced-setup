@@ -76,7 +76,6 @@ const processGeoJSON = async (data) => {
     .filter(
       (feature) =>
         feature?.properties?.types?.includes("shakemap") &&
-        feature?.properties?.mag >= 4.5 &&
         feature?.properties?.mmi
     )
     .map(async (feature) => {
@@ -150,18 +149,23 @@ const batchWriteToDynamoDB = async (items) => {
 exports.handler = async (event) => {
   console.log("Processor started. Event:", JSON.stringify(event, null, 2));
 
-  const s3Record = event.Records[0].s3;
-  const bucket = s3Record.bucket.name;
-  const key = s3Record.object.key;
-
   try {
+    // Extract the S3 event from the SNS message
+    const snsMessage = event.Records[0].Sns.Message;
+    const s3Event = JSON.parse(snsMessage);
+    const s3Record = s3Event.Records[0].s3;
+
+    const bucket = s3Record.bucket.name;
+    const key = decodeURIComponent(s3Record.object.key.replace(/\+/g, " ")); // Handle spaces in filenames
+
     const getObjectParams = { Bucket: bucket, Key: key };
     const { Body } = await s3Client.send(new GetObjectCommand(getObjectParams));
     const rawDataString = await streamToString(Body);
+    console.log("rawDataString:", rawDataString.slice(0, 100) + "...");
+
     const rawDataJson = JSON.parse(rawDataString);
 
     console.log(`Successfully read and parsed data from s3://${bucket}/${key}`);
-
     const documents = await processGeoJSON(rawDataJson);
     if (!documents || documents.length === 0) {
       console.log("No processable earthquake documents found.");
