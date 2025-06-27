@@ -3,6 +3,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
   BatchWriteCommand,
+  ScanCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const CovJSONReader = require("covjson-reader");
 const turf = require("@turf/turf");
@@ -126,6 +127,53 @@ const processGeoJSON = async (data) => {
   return result.flat().filter((item) => item !== null);
 };
 
+// New function to clear the entire DynamoDB table
+const clearDynamoDBTable = async () => {
+  console.log(`Clearing all items from table ${TABLE_NAME}...`);
+  let lastEvaluatedKey = null;
+  let totalDeletedCount = 0;
+
+  do {
+    const scanParams = {
+      TableName: TABLE_NAME,
+      ProjectionExpression: "id", // Only fetch the primary key
+    };
+
+    if (lastEvaluatedKey) {
+      scanParams.ExclusiveStartKey = lastEvaluatedKey;
+    }
+
+    const scanResult = await docClient.send(new ScanCommand(scanParams));
+
+    if (scanResult.Items && scanResult.Items.length > 0) {
+      const deleteRequests = scanResult.Items.map((item) => ({
+        DeleteRequest: {
+          Key: { id: item.id },
+        },
+      }));
+
+      // Batch delete in chunks of 25
+      for (let i = 0; i < deleteRequests.length; i += 25) {
+        const chunk = deleteRequests.slice(i, i + 25);
+        const batchWriteParams = {
+          RequestItems: {
+            [TABLE_NAME]: chunk,
+          },
+        };
+        await docClient.send(new BatchWriteCommand(batchWriteParams));
+        totalDeletedCount += chunk.length;
+        console.log(`Deleted a chunk of ${chunk.length} items.`);
+      }
+    }
+
+    lastEvaluatedKey = scanResult.LastEvaluatedKey;
+  } while (lastEvaluatedKey);
+
+  console.log(
+    `Finished clearing table. Total items deleted: ${totalDeletedCount}`
+  );
+};
+
 const batchWriteToDynamoDB = async (items) => {
   const writeRequests = items.map((item) => ({
     PutRequest: {
@@ -166,6 +214,11 @@ exports.handler = async (event) => {
     const rawDataJson = JSON.parse(rawDataString);
 
     console.log(`Successfully read and parsed data from s3://${bucket}/${key}`);
+
+    // Step 1: Clear the entire table
+    await clearDynamoDBTable();
+
+    // Step 2: Process the new data
     const documents = await processGeoJSON(rawDataJson);
     if (!documents || documents.length === 0) {
       console.log("No processable earthquake documents found.");
@@ -175,6 +228,7 @@ exports.handler = async (event) => {
     console.log(
       `Processed ${documents.length} documents. Preparing to write to DynamoDB.`
     );
+    // Step 3: Write the new documents
     await batchWriteToDynamoDB(documents);
 
     console.log("Successfully processed and stored all documents.");
