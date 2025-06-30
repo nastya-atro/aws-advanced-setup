@@ -12,7 +12,10 @@ This project demonstrates a robust and secure setup for a serverless application
 
 ## `earthquake-import-serverless`
 
-TODO: Project description and setup instructions need to be added.
+This is a standalone, event-driven SAM application that periodically fetches raw earthquake data, processes it, and stores it in DynamoDB.
+
+For detailed architecture and setup instructions, please see the service-specific documentation:
+[**`earthquake-import-serverless/README.md`**](./earthquake-import-serverless/README.md)
 
 ---
 
