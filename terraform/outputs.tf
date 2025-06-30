@@ -16,4 +16,9 @@ output "db_migrator_lambda_name" {
 output "db_credentials_secret_arn" {
   description = "ARN of the secret containing DB credentials."
   value       = aws_secretsmanager_secret.db_credentials.arn
+}
+
+output "bastion_instance_id" {
+  description = "The ID of the bastion EC2 instance for SSM."
+  value       = aws_instance.bastion.id
 } 
