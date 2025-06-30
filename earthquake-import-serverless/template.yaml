@@ -45,6 +45,12 @@ Resources:
       Topics:
         - !Ref S3NotificationTopic
 
+  # SQS Queue for Dead Letters
+  LambdaDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: earthquake-import-dlq
+
   # S3 Bucket for storing raw data
   RawDataBucket:
     Type: AWS::S3::Bucket
@@ -72,6 +78,9 @@ Resources:
       CodeUri: src/fetcher/
       Handler: app.handler
       Description: Fetches raw earthquake data from an external API and stores it in S3.
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt LambdaDeadLetterQueue.Arn
       Policies:
         - Statement:
             - Effect: Allow
@@ -103,6 +112,9 @@ Resources:
       CodeUri: src/processor/
       Handler: app.handler
       Description: Processes raw earthquake data from S3 and saves it to DynamoDB.
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt LambdaDeadLetterQueue.Arn
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref RawDataBucket
