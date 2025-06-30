@@ -1,0 +1,16 @@
+{
+  "name": "db-manager",
+  "version": "1.0.0",
+  "description": "Manages database migrations and seeds",
+  "main": "run-migrations.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.583.0",
+    "knex": "^3.1.0",
+    "pg": "^8.11.3"
+  }
+}
