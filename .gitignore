@@ -22,6 +22,7 @@
 
 # Local Terraform directories
 **/.terraform/
+**/check_service.zip
 
 # .tfstate files
 *.tfstate
@@ -51,3 +52,6 @@ terraform.rc
 
 # Generated ZIP file for Lambda
 **/db_migrator.zip
+
+//
+

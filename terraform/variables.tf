@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  description = "A name for the project to prefix resources."
+  description = "The name of the project"
   type        = string
   default     = "adv-setup"
 }
@@ -26,4 +26,10 @@ variable "db_username" {
   description = "The master username for the database."
   type        = string
   default     = "masteruser"
+}
+
+variable "check_service_api_key" {
+  description = "API key for the check-service"
+  type        = string
+  sensitive   = true
 } 

@@ -21,4 +21,9 @@ output "db_credentials_secret_arn" {
 output "bastion_instance_id" {
   description = "The ID of the bastion EC2 instance for SSM."
   value       = aws_instance.bastion.id
+}
+
+output "check_service_public_ip" {
+  description = "Public IP address of the check-service instance"
+  value       = aws_instance.check_service.public_ip
 } 
