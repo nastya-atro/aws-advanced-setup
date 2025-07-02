@@ -42,4 +42,16 @@ variable "environment_variables" {
   description = "A map of environment variables for the Lambda function."
   type        = map(string)
   default     = {}
+}
+
+variable "vpc_subnet_ids" {
+  description = "List of subnet IDs associated with the Lambda function."
+  type        = list(string)
+  default     = []
+}
+
+variable "vpc_security_group_ids" {
+  description = "List of security group IDs associated with the Lambda function."
+  type        = list(string)
+  default     = []
 } 

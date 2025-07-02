@@ -23,6 +23,12 @@ resource "aws_iam_role_policy_attachment" "basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "vpc_execution" {
+  count      = length(var.vpc_subnet_ids) > 0 ? 1 : 0
+  role       = aws_iam_role.this.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 resource "aws_lambda_function" "this" {
   function_name = var.function_name
   role          = aws_iam_role.this.arn
@@ -39,7 +45,16 @@ resource "aws_lambda_function" "this" {
     variables = var.environment_variables
   }
 
+  dynamic "vpc_config" {
+    for_each = length(var.vpc_subnet_ids) > 0 ? [1] : []
+    content {
+      subnet_ids         = var.vpc_subnet_ids
+      security_group_ids = var.vpc_security_group_ids
+    }
+  }
+
   depends_on = [
-    aws_iam_role_policy_attachment.basic_execution
+    aws_iam_role_policy_attachment.basic_execution,
+    aws_iam_role_policy_attachment.vpc_execution
   ]
 } 

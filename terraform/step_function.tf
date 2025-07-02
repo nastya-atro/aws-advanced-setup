@@ -114,9 +114,23 @@ module "get_locations_lambda" {
   source           = "./modules/lambda"
   function_name    = "GetLocationsHandler"
   source_code_path = "${path.module}/../check-lambdas/02-get-locations-handler"
-  # This Lambda needs permissions to access RDS
-  # For now, we leave the policy empty. We'll add it when connecting to the actual DB.
+  environment_variables = {
+    DB_HOST        = aws_db_instance.main.address
+    DB_PORT        = aws_db_instance.main.port
+    DB_NAME        = aws_db_instance.main.db_name
+    DB_SECRET_NAME = aws_secretsmanager_secret.db_credentials.name
+  }
+  vpc_subnet_ids         = aws_subnet.private[*].id
+  vpc_security_group_ids = [aws_security_group.lambda.id]
 }
+
+# Attach existing Secrets Manager policy to get_locations_lambda role
+resource "aws_iam_role_policy_attachment" "get_locations_secrets_attachment" {
+  role       = module.get_locations_lambda.role_name
+  policy_arn = aws_iam_policy.secrets_manager_access.arn
+}
+
+
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}

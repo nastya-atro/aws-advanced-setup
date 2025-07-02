@@ -1,0 +1,11 @@
+{
+  "name": "get-locations-handler",
+  "version": "1.0.0",
+  "description": "Lambda handler to get locations from PostgreSQL RDS",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.583.0",
+    "knex": "^3.1.0",
+    "pg": "^8.11.3"
+  }
+}
