@@ -14,15 +14,26 @@ Globals:
 Resources:
   # DynamoDB Table for storing processed earthquake data
   EarthquakeDataTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: EarthquakeData
-      PrimaryKey:
-        Name: id
-        Type: String
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  # SQS Queue for metadata messages
+  EarthquakeMetadataQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: earthquake-metadata-queue
 
   # SNS Topic to decouple S3 from Lambda
   S3NotificationTopic:
@@ -137,6 +148,35 @@ Resources:
           Properties:
             Topic: !Ref S3NotificationTopic
 
+  # --- Stream Processor Lambda ---
+  StreamProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/stream-processor/
+      Handler: app.handler
+      Description: Processes DynamoDB stream events and sends metadata to SQS.
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt EarthquakeMetadataQueue.QueueName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeStream
+                - dynamodb:GetRecords
+                - dynamodb:GetShardIterator
+                - dynamodb:ListStreams
+              Resource: !GetAtt EarthquakeDataTable.StreamArn
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: !Ref EarthquakeMetadataQueue
+      Events:
+        StreamEvent:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt EarthquakeDataTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 100
+
 Outputs:
   RawDataBucketName:
     Description: "Name of the S3 bucket for raw data"
@@ -144,3 +184,9 @@ Outputs:
   EarthquakeDataTableName:
     Description: "Name of the DynamoDB table for processed earthquake data"
     Value: !Ref EarthquakeDataTable
+  EarthquakeMetadataQueueUrl:
+    Description: "URL of the SQS queue for earthquake metadata"
+    Value: !Ref EarthquakeMetadataQueue
+  EarthquakeMetadataQueueArn:
+    Description: "ARN of the SQS queue for earthquake metadata"
+    Value: !GetAtt EarthquakeMetadataQueue.Arn

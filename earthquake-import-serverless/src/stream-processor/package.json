@@ -1,0 +1,12 @@
+{
+  "name": "stream-processor",
+  "version": "1.0.0",
+  "description": "Lambda function to process DynamoDB Stream and send to SQS.",
+  "main": "app.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.585.0",
+    "@aws-sdk/util-dynamodb": "^3.585.0"
+  }
+}
