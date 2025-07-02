@@ -20,11 +20,16 @@ exports.handler = async (event) => {
     console.log("DynamoDB Record:", JSON.stringify(record.dynamodb, null, 2));
 
     // The data from the stream is in DynamoDB JSON format, so we unmarshall it
-    const metadata = unmarshall(record.dynamodb.NewImage);
+    const fullRecord = unmarshall(record.dynamodb.NewImage);
+
+    // We only want to send the feature_id
+    const messagePayload = {
+      feature_id: fullRecord.id, // Assuming the feature_id is stored in the 'id' attribute
+    };
 
     const params = {
       QueueUrl: SQS_QUEUE_URL,
-      MessageBody: JSON.stringify(metadata),
+      MessageBody: JSON.stringify(messagePayload),
     };
 
     try {
