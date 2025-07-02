@@ -53,4 +53,8 @@ terraform.rc
 **/db_migrator.zip
 **/check_service.zip
 **/sqs_consumer.zip
+**/CheckLocationHandler.zip
+**/GetLocationsHandler.zip
+**/NotifyTriggerHandler.zip
+**/SendNotificationHandler.zip  
 
