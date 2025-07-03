@@ -53,4 +53,7 @@ terraform.rc
 # Generated ZIP file for Lambda
 **/*.zip
 
+# Build artifacts
+artifacts/
+
 

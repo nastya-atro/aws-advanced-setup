@@ -1,8 +1,5 @@
-data "archive_file" "this" {
-  type        = "zip"
-  source_dir  = var.source_code_path
-  output_path = "${path.module}/../../${var.function_name}.zip" # Place zip in root terraform folder
-}
+# This resource is no longer needed as we build the artifact in a separate step.
+# data "archive_file" "this" { ... }
 
 resource "aws_iam_role" "this" {
   name = "${var.function_name}-role"
@@ -39,8 +36,8 @@ resource "aws_lambda_function" "this" {
   function_name = var.function_name
   role          = aws_iam_role.this.arn
 
-  filename         = data.archive_file.this.output_path
-  source_code_hash = data.archive_file.this.output_base64sha256
+  filename         = var.filename
+  source_code_hash = var.source_code_hash
 
   handler = var.handler
   runtime = var.runtime

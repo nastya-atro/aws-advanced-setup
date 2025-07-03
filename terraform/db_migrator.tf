@@ -36,7 +36,8 @@ module "db_migrator" {
   function_name    = "${var.project_name}-db-migrator"
   handler          = "run-migrations.handler"
   runtime          = "nodejs18.x"
-  source_code_path = "${path.module}/../database"
+  filename         = "${path.root}/../artifacts/db_migrator.zip"
+  source_code_hash = filebase64sha256("${path.root}/../artifacts/db_migrator.zip")
   timeout          = 300
   memory_size      = 256
 

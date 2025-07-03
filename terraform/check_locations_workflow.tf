@@ -113,7 +113,8 @@ resource "aws_sfn_state_machine" "notify_locations_workflow" {
 module "get_locations_lambda" {
   source           = "./modules/lambda"
   function_name    = "GetLocationsHandler"
-  source_code_path = "${path.module}/../check-lambdas/02-get-locations-handler"
+  filename         = "${path.root}/../artifacts/GetLocationsHandler.zip"
+  source_code_hash = filebase64sha256("${path.root}/../artifacts/GetLocationsHandler.zip")
   environment_variables = {
     DB_HOST        = aws_db_instance.main.address
     DB_PORT        = aws_db_instance.main.port
@@ -143,7 +144,8 @@ locals {
 module "check_location_lambda" {
   source           = "./modules/lambda"
   function_name    = "CheckLocationHandler"
-  source_code_path = "${path.module}/../check-lambdas/03-check-location-handler"
+  filename         = "${path.root}/../artifacts/CheckLocationHandler.zip"
+  source_code_hash = filebase64sha256("${path.root}/../artifacts/CheckLocationHandler.zip")
 }
 
 # Define the policy for DynamoDB access
@@ -182,9 +184,10 @@ resource "aws_iam_policy" "ses_send_policy" {
 }
 
 module "send_notification_lambda" {
-  source                = "./modules/lambda"
-  function_name         = "SendNotificationHandler"
-  source_code_path      = "${path.module}/../check-lambdas/04-send-notification-handler"
+  source               = "./modules/lambda"
+  function_name        = "SendNotificationHandler"
+  filename             = "${path.root}/../artifacts/SendNotificationHandler.zip"
+  source_code_hash     = filebase64sha256("${path.root}/../artifacts/SendNotificationHandler.zip")
   additional_policy_arns = {
     ses_send_policy = aws_iam_policy.ses_send_policy.arn
   }

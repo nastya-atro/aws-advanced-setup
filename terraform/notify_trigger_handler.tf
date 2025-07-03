@@ -12,10 +12,11 @@ data "aws_cloudformation_stack" "sam_stack" {
 module "notify_trigger_lambda" {
   source           = "./modules/lambda"
   function_name    = "NotifyTriggerHandler"
-  source_code_path = "${path.module}/../check-lambdas/01-notify-trigger-handler"
-  
-  environment_variables = {
-    STATE_MACHINE_ARN = aws_sfn_state_machine.notify_locations_workflow.id
+  filename         = "${path.root}/../artifacts/NotifyTriggerHandler.zip"
+  source_code_hash = filebase64sha256("${path.root}/../artifacts/NotifyTriggerHandler.zip")
+  # This lambda doesn't need VPC access, so we don't provide VPC variables
+  additional_policy_arns = {
+    start_sfn = aws_iam_policy.start_sfn_policy.arn
   }
 }
 

@@ -15,8 +15,13 @@ variable "runtime" {
   default     = "nodejs20.x"
 }
 
-variable "source_code_path" {
-  description = "The path to the source code directory for the Lambda function."
+variable "filename" {
+  description = "The path to the function's deployment package within the local filesystem."
+  type        = string
+}
+
+variable "source_code_hash" {
+  description = "Used to trigger updates when the deployment package changes."
   type        = string
 }
 
