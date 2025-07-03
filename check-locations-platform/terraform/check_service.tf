@@ -1,26 +1,19 @@
 # This file contains the resources for the check-service EC2 instance.
 
-# 1. Archive the check-service application code
-data "archive_file" "check_service_zip" {
-  type        = "zip"
-  source_dir  = "${path.root}/../check-service"
-  output_path = "${path.module}/check_service.zip"
-}
-
-# 2. Create an S3 bucket to store the application code
+# 1. Create an S3 bucket to store the application code
 resource "aws_s3_bucket" "check_service_code" {
   bucket = "${var.project_name}-check-service-code-bucket"
 }
 
-# 3. Upload the zipped code to the S3 bucket
+# 2. Upload the zipped code to the S3 bucket
 resource "aws_s3_object" "check_service_code" {
   bucket = aws_s3_bucket.check_service_code.id
   key    = "check_service.zip"
-  source = data.archive_file.check_service_zip.output_path
-  etag   = filemd5(data.archive_file.check_service_zip.output_path)
+  source = "${path.root}/../artifacts/check_service.zip"
+  etag   = filemd5("${path.root}/../artifacts/check_service.zip")
 }
 
-# 4. IAM policy to allow reading from the S3 bucket
+# 3. IAM policy to allow reading from the S3 bucket
 resource "aws_iam_policy" "check_service_s3" {
   name        = "${var.project_name}-check-service-s3-policy"
   description = "Allows reading the check-service code from S3"
@@ -36,7 +29,7 @@ resource "aws_iam_policy" "check_service_s3" {
   })
 }
 
-# 5. The EC2 instance for the check-service, using our module
+# 4. The EC2 instance for the check-service, using our module
 module "check_service_instance" {
   source = "./modules/ec2-instance"
 
