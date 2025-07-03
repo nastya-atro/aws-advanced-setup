@@ -27,6 +27,7 @@
 *.tfstate
 *.tfstate
 *.tfstate.backup
+*.tfstate.*.backup
 
 
 # Crash log files
@@ -50,11 +51,6 @@ terraform.rc
 .terraform.lock.hcl
 
 # Generated ZIP file for Lambda
-**/db_migrator.zip
-**/check_service.zip
-**/sqs_consumer.zip
-**/CheckLocationHandler.zip
-**/GetLocationsHandler.zip
-**/NotifyTriggerHandler.zip
-**/SendNotificationHandler.zip  
+**/*.zip
+
 

@@ -10,7 +10,7 @@ output "rds_db_name" {
 
 output "db_migrator_lambda_name" {
   description = "The name of the database migrator Lambda function."
-  value       = aws_lambda_function.db_migrator.function_name
+  value       = module.db_migrator.name
 }
 
 output "db_credentials_secret_arn" {
@@ -23,7 +23,7 @@ output "bastion_instance_id" {
   value       = aws_instance.bastion.id
 }
 
-output "check_service_public_ip" {
+output "check_service_instance_ip" {
   description = "Public IP address of the check-service instance"
   value       = aws_instance.check_service.public_ip
 } 

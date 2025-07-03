@@ -3,7 +3,7 @@ resource "random_password" "db_password" {
   length  = 20
   special = true
   # PostgreSQL does not like some characters, so we exclude them.
-  override_special = "!#$%&()*+,-.:;<=>?@[]^_`{|}~"
+  override_special = "!#$%&()*+,-.:;<=>?[]^_`{|}~"
 }
 
 # Create a secret in AWS Secrets Manager
