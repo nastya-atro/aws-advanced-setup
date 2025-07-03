@@ -13,12 +13,9 @@ const apiKeyMiddleware = (req, res, next) => {
   }
 };
 
-app.get('/', (req, res) => {
-  res.send('check-service is running');
-});
-
-app.get('/check', apiKeyMiddleware, (req, res) => {
-  res.send({ status: 'ok', timestamp: new Date() });
+app.post('/check', apiKeyMiddleware, (req, res) => {
+  console.log('Received payload:', req.body);
+  res.send({ status: 'ok', received: req.body });
 });
 
 app.listen(PORT, () => {
