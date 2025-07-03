@@ -165,18 +165,30 @@ resource "aws_iam_role_policy_attachment" "check_location_dynamodb_attachment" {
   policy_arn = aws_iam_policy.dynamodb_read_policy.arn
 }
 
+resource "aws_ses_email_identity" "source_email" {
+  email = "a.atroshchanka.work@gmail.com"
+}
+
+resource "aws_iam_policy" "ses_send_policy" {
+  name = "ses-send-email-policy"
+  policy = jsonencode({
+    Version   = "2012-10-17",
+    Statement = [{
+      Action   = "ses:SendEmail",
+      Effect   = "Allow",
+      Resource = aws_ses_email_identity.source_email.arn
+    }]
+  })
+}
+
 module "send_notification_lambda" {
-  source           = "./modules/lambda"
-  function_name    = "SendNotificationHandler"
-  source_code_path = "${path.module}/../check-lambdas/04-send-notification-handler"
-  # This Lambda will need permissions to use SES (Simple Email Service)
-  # Example policy:
-  # iam_policy_document = jsonencode({
-  #   Version: "2012-10-17",
-  #   Statement: [{
-  #     Action: "ses:SendEmail",
-  #     Effect: "Allow",
-  #     Resource: "*" # It's better to scope this down to a specific identity
-  #   }]
-  # })
+  source                = "./modules/lambda"
+  function_name         = "SendNotificationHandler"
+  source_code_path      = "${path.module}/../check-lambdas/04-send-notification-handler"
+  additional_policy_arns = {
+    ses_send_policy = aws_iam_policy.ses_send_policy.arn
+  }
+  environment_variables = {
+    SOURCE_EMAIL = aws_ses_email_identity.source_email.email
+  }
 } 

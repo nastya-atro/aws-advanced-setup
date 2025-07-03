@@ -27,7 +27,7 @@ variable "timeout" {
 }
 
 variable "memory_size" {
-  description = "The memory size for the Lambda function in MB."
+  description = "The amount of memory that your function has access to."
   type        = number
   default     = 128
 }
@@ -54,4 +54,10 @@ variable "vpc_security_group_ids" {
   description = "List of security group IDs associated with the Lambda function."
   type        = list(string)
   default     = []
+}
+
+variable "additional_policy_arns" {
+  description = "Map of additional IAM policy ARNs to attach to the function's role. Keys are static names, values are policy ARNs."
+  type        = map(string)
+  default     = {}
 } 
