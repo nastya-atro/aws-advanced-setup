@@ -10,10 +10,10 @@ set -e
 # Make sure the order of items in both arrays matches!
 SRC_DIRS=(
   "db_migrator"
-  "check-workflow/02-get-locations-handler"
-  "check-workflow/03-check-location-handler"
-  "check-workflow/04-send-notification-handler"
-  "check-workflow/01-notify-trigger-handler"
+  "check-workflow/proactive_monitoring_handlers/01-get-locations"
+  "check-workflow/proactive_monitoring_handlers/02-check-location"
+  "check-workflow/shared_handlers/send-notification"
+  "check-workflow/proactive_monitoring_handlers/00-trigger-handler"
   "check-service"
 )
 ZIP_FILES=(

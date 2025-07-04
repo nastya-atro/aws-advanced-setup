@@ -22,6 +22,7 @@ crash.*.log
 .terraformrc
 terraform.rc
 .terraform.lock.hcl
+.terraform.tfstate.lock.info
 
 # =========================
 # Build Artifacts
