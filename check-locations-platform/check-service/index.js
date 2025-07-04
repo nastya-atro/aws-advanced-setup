@@ -98,5 +98,5 @@ app.get('/check/status/:executionArn', apiKeyMiddleware, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`check-service listening on port ${PORT}`);
+  console.log(`check-service listening on port ${PORT} (check_ci/cd_flow)`);
 });
