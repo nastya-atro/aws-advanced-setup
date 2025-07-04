@@ -68,7 +68,8 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [aws_security_group.this.id]
   iam_instance_profile   = aws_iam_instance_profile.this.name
 
-  user_data = var.user_data
+  user_data                   = var.user_data
+  user_data_replace_on_change = true
 
   tags = merge(var.tags, {
     Name = var.instance_name

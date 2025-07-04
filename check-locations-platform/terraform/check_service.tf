@@ -1,5 +1,9 @@
 # This file contains the resources for the check-service EC2 instance.
 
+locals {
+  check_service_zip_hash = filemd5("${path.root}/../artifacts/check_service.zip")
+}
+
 # 1. Create an S3 bucket to store the application code
 resource "aws_s3_bucket" "check_service_code" {
   bucket = "${var.project_name}-check-service-code-bucket"
@@ -10,7 +14,7 @@ resource "aws_s3_object" "check_service_code" {
   bucket = aws_s3_bucket.check_service_code.id
   key    = "check_service.zip"
   source = "${path.root}/../artifacts/check_service.zip"
-  etag   = filemd5("${path.root}/../artifacts/check_service.zip")
+  etag   = local.check_service_zip_hash
 }
 
 # 3. IAM policy to allow reading from the S3 bucket
@@ -71,8 +75,12 @@ module "check_service_instance" {
     }
   ]
 
-  user_data = <<-EOF
+  user_data = nonsensitive(<<-EOF
               #!/bin/bash
+              # This hash changes when the artifact changes, forcing a new instance
+              #
+              # Hash: ${local.check_service_zip_hash}
+
               yum update -y
               yum install -y docker unzip
               
@@ -84,9 +92,15 @@ module "check_service_instance" {
               aws s3 cp s3://${aws_s3_bucket.check_service_code.id}/check_service.zip /home/ec2-user/check_service.zip
               
               cd /home/ec2-user
+              # Clean up previous deployment
+              rm -rf check-service
               unzip check_service.zip -d check-service
               
               cd /home/ec2-user/check-service
+              
+              # Stop and remove old container if it exists to avoid name conflicts
+              docker stop check-service-container || true
+              docker rm check-service-container || true
               
               docker build -t check-service .
               docker run -d -p 3002:3002 --restart always \
@@ -94,6 +108,7 @@ module "check_service_instance" {
                 -e STEP_FUNCTION_ARN='${aws_sfn_state_machine.on_demand_check_workflow.id}' \
                 --name check-service-container check-service
               EOF
+  )
 
   tags = {
     Name = "${var.project_name}-check-service"
