@@ -21,7 +21,6 @@ crash.*.log
 *.tfplan
 .terraformrc
 terraform.rc
-.terraform.lock.hcl
 .terraform.tfstate.lock.info
 
 # =========================
