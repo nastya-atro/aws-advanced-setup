@@ -1,0 +1,49 @@
+name: CD - Deploy Check Platform
+
+on:
+  workflow_run:
+    workflows: ["CI - Build Check Platform"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: platform-artifacts
+          path: check-locations-platform/artifacts/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./check-locations-platform/terraform
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve -var="check_service_api_key=${{ secrets.CHECK_SERVICE_API_KEY }}"
+        working-directory: ./check-locations-platform/terraform

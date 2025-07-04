@@ -1,0 +1,43 @@
+name: CI - Build Check Platform
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "check-locations-platform/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "check-locations-platform/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./check-locations-platform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Make build script executable
+        run: chmod +x ./build-artifacts.sh
+
+      - name: Build application artifacts
+        run: ./build-artifacts.sh
+
+      - name: Upload build artifacts
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-artifacts
+          path: check-locations-platform/artifacts/
