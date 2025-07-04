@@ -37,20 +37,17 @@ exports.handler = async (event) => {
   };
 
   try {
-    // Only this email verified in SES sandbox
     // TODO: Enable the code below after requesting and getting production access for Amazon SES.
     // The account is currently in the SES Sandbox, which restricts sending to verified email addresses only.
     // For more details, see: https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html
 
-    if (location.email === "a.atroshchanka.work@gmail.com") {
-      const command = new SendEmailCommand(emailParams);
-      await sesClient.send(command);
-    } else {
-      console.log(
-        `(Sandbox Mode) Simulating sending email to ${location.email}.`
-      );
-      console.log(`Notification successfully sent to ${location.email}.`);
-    }
+    // const command = new SendEmailCommand(emailParams);
+    // await sesClient.send(command);
+
+    console.log(
+      `(Sandbox Mode) Simulating sending email to ${location.email}.`
+    );
+    console.log(`Notification successfully sent to ${location.email}.`);
   } catch (error) {
     console.error("Error sending email via SES:", error);
     throw new Error("Failed to send notification email.");

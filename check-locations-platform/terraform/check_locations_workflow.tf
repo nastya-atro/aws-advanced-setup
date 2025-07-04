@@ -30,7 +30,8 @@ resource "aws_iam_policy" "step_function_lambda_policy" {
       Resource = [
         module.get_locations_lambda.arn,
         module.check_location_lambda.arn,
-        module.send_notification_lambda.arn
+        module.send_notification_lambda.arn,
+        module.on_demand_check_lambda.arn
       ]
     }]
   })

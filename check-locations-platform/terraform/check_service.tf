@@ -106,6 +106,7 @@ module "check_service_instance" {
               docker run -d -p 3002:3002 --restart always \
                 -e CHECK_SERVICE_API_KEY='${var.check_service_api_key}' \
                 -e STEP_FUNCTION_ARN='${aws_sfn_state_machine.on_demand_check_workflow.id}' \
+                -e AWS_REGION='${data.aws_region.current.name}' \
                 --name check-service-container check-service
               EOF
   )
