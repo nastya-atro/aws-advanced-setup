@@ -29,7 +29,23 @@ resource "aws_iam_policy" "check_service_s3" {
   })
 }
 
-# 4. The EC2 instance for the check-service, using our module
+# 4. IAM policy to allow starting the step function execution
+resource "aws_iam_policy" "check_service_sfn" {
+  name        = "${var.project_name}-check-service-sfn-policy"
+  description = "Allows starting the step function execution"
+  policy = jsonencode({
+    Version   = "2012-10-17",
+    Statement = [
+      {
+        Action   = "states:StartExecution",
+        Effect   = "Allow",
+        Resource = aws_sfn_state_machine.on_demand_check_workflow.id
+      }
+    ]
+  })
+}
+
+# 5. The EC2 instance for the check-service, using our module
 module "check_service_instance" {
   source = "./modules/ec2-instance"
 
@@ -40,8 +56,9 @@ module "check_service_instance" {
   vpc_id        = aws_vpc.main.id
 
   additional_policy_arns = {
-    s3_read = aws_iam_policy.check_service_s3.arn
-    ssm     = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    s3_read   = aws_iam_policy.check_service_s3.arn
+    sfn_start = aws_iam_policy.check_service_sfn.arn
+    ssm       = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
 
   ingress_rules = [
@@ -72,7 +89,10 @@ module "check_service_instance" {
               cd /home/ec2-user/check-service
               
               docker build -t check-service .
-              docker run -d -p 3002:3002 --restart always -e CHECK_SERVICE_API_KEY='${var.check_service_api_key}' --name check-service-container check-service
+              docker run -d -p 3002:3002 --restart always \
+                -e CHECK_SERVICE_API_KEY='${var.check_service_api_key}' \
+                -e STEP_FUNCTION_ARN='${aws_sfn_state_machine.on_demand_check_workflow.id}' \
+                --name check-service-container check-service
               EOF
 
   tags = {

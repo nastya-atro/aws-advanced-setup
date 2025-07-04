@@ -23,8 +23,8 @@ exports.handler = async (event) => {
 
   // Simulate a successful check
   const checkResult = {
-    status: "success",
-    message: `Check for ${location.name} passed.`,
+    isAffected: false, // In the proactive flow, "success" means not affected.
+    message: `Check for ${location.name} completed successfully.`,
     location: location, // Pass the location data to the next step
   };
 

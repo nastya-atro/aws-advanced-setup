@@ -73,27 +73,27 @@ resource "aws_sfn_state_machine" "notify_locations_workflow" {
             CheckSingleLocation = {
               Type       = "Task",
               Resource   = module.check_location_lambda.arn,
-              ResultPath = "$.CheckResult",
-              Next       = "ShouldSendNotification"
+              ResultPath = "$.check_result",
+              Next       = "Is Location OK?"
             },
-            ShouldSendNotification = {
+            "Is Location OK?" = {
               Type    = "Choice",
               Choices = [
                 {
-                  Variable   = "$.CheckResult.status",
-                  StringEquals = "success",
-                  Next       = "SendNotification"
+                  Variable    = "$.check_result.isAffected",
+                  BooleanEquals = false,
+                  Next        = "Notify Trigger"
                 }
               ],
-              Default = "LocationCheckFailed"
+              Default = "End State"
             },
-            SendNotification = {
+            "Notify Trigger" = {
               Type       = "Task",
               Resource   = module.send_notification_lambda.arn,
-              InputPath  = "$.CheckResult",
+              InputPath  = "$.check_result",
               End        = true
             },
-            LocationCheckFailed = {
+            "End State" = {
               Type = "Succeed"
             }
           }

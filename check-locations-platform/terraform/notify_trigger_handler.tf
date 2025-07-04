@@ -14,6 +14,9 @@ module "notify_trigger_lambda" {
   function_name    = "NotifyTriggerHandler"
   filename         = "${path.root}/../artifacts/NotifyTriggerHandler.zip"
   source_code_hash = filebase64sha256("${path.root}/../artifacts/NotifyTriggerHandler.zip")
+  environment_variables = {
+    STATE_MACHINE_ARN = aws_sfn_state_machine.notify_locations_workflow.id
+  }
   # This lambda doesn't need VPC access, so we don't provide VPC variables
   additional_policy_arns = {
     start_sfn = aws_iam_policy.start_sfn_policy.arn

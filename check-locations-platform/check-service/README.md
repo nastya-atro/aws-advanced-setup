@@ -29,7 +29,8 @@ curl -X POST \
   -d '{
     "latitude": 40.7128,
     "longitude": -74.0060,
-    "email": "user@example.com"
+    "email": "user@example.com",
+    "name": "My Favorite Location"
   }'
 ```
 

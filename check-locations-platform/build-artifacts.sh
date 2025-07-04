@@ -14,6 +14,7 @@ SRC_DIRS=(
   "check-workflow/proactive_monitoring_handlers/02-check-location"
   "check-workflow/shared_handlers/send-notification"
   "check-workflow/proactive_monitoring_handlers/00-trigger-handler"
+  "check-workflow/on_demand_check_handlers/01-check-location-against-events"
   "check-service"
 )
 ZIP_FILES=(
@@ -22,6 +23,7 @@ ZIP_FILES=(
   "CheckLocationHandler.zip"
   "SendNotificationHandler.zip"
   "NotifyTriggerHandler.zip"
+  "OnDemandCheckHandler.zip"
   "check_service.zip"
 )
 
