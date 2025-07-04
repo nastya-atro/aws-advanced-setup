@@ -1,0 +1,40 @@
+name: CD - Deploy earthquake-import-serverless
+
+on:
+  workflow_run:
+    workflows: ["CI - Build and Upload Artifact"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      id-token: write # Required for OIDC to get role from AWS
+      contents: read # Required for checkout
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sam-build-artifact
+          path: earthquake-import-serverless/.aws-sam/build/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy SAM application
+        run: sam deploy --no-confirm-changeset
+        working-directory: ./earthquake-import-serverless
