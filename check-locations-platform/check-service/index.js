@@ -1,6 +1,10 @@
 const PORT = 3002;
 const express = require('express');
-const { SFNClient, StartExecutionCommand } = require('@aws-sdk/client-sfn');
+const {
+  SFNClient,
+  StartExecutionCommand,
+  DescribeExecutionCommand,
+} = require('@aws-sdk/client-sfn');
 
 const app = express();
 const sfnClient = new SFNClient({});
@@ -55,6 +59,40 @@ app.post('/check', apiKeyMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Failed to start Step Function execution:', error);
+    res.status(500).send({ message: 'Failed to process request.' });
+  }
+});
+
+app.get('/check/status/:executionArn', apiKeyMiddleware, async (req, res) => {
+  const { executionArn } = req.params;
+
+  if (!executionArn) {
+    return res.status(400).json({ error: 'Missing executionArn parameter.' });
+  }
+
+  const command = new DescribeExecutionCommand({ executionArn });
+
+  try {
+    const { status, startDate, stopDate, output } = await sfnClient.send(command);
+
+    let result = null;
+    if (output) {
+      // The output from the state machine is a JSON string.
+      result = JSON.parse(output);
+    }
+
+    res.status(200).json({
+      executionArn,
+      status,
+      startDate,
+      stopDate,
+      result,
+    });
+  } catch (error) {
+    console.error('Failed to get Step Function execution status:', error);
+    if (error.name === 'ExecutionDoesNotExist') {
+      return res.status(404).json({ message: 'Execution not found.' });
+    }
     res.status(500).send({ message: 'Failed to process request.' });
   }
 });

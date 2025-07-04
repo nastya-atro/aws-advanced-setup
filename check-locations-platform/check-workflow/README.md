@@ -2,18 +2,50 @@
 
 This directory contains the source code for the individual AWS Lambda functions that constitute the platform's workflows. The workflows themselves are orchestrated by AWS Step Functions.
 
-The handlers are organized into subdirectories based on the business workflow they belong to.
+Below is a description of each handler's role in the system.
 
-## Directories
+---
 
-### `/proactive_monitoring_handlers`
+## Proactive Monitoring Handlers
 
-Contains the set of Lambda functions that are part of the proactive monitoring workflow. This workflow periodically checks all known locations against new events. See the [README](./proactive_monitoring_handlers/README.md) inside for more details.
+These functions are part of the scheduled workflow that periodically checks all known locations.
 
-### `/on_demand_check_handlers`
+### `00-trigger-handler`
 
-Contains the Lambda functions for the on-demand workflow, which is triggered via the API to check a single location. See the [README](./on_demand_check_handlers/README.md) inside for more details.
+This is not currently used in the main workflow but is designed to manually trigger the proactive monitoring workflow for testing purposes.
 
-### `/shared_handlers`
+### `01-get-locations` (`GetLocationsHandler`)
 
-Contains common Lambda functions that are reused across multiple workflows, such as the `send-notification` handler.
+- **Triggered by:** The start of the `NotifyLocationsWorkflow`.
+- **Purpose:** Connects to the RDS database to fetch the complete list of user locations that require monitoring.
+- **Output:** An array of location objects.
+
+### `02-check-location` (`CheckLocationHandler`)
+
+- **Triggered by:** The `Map` state within the `NotifyLocationsWorkflow` for each location.
+- **Purpose:** Receives a single location object. It queries the DynamoDB events table to determine if the location is affected by any known events.
+- **Output:** A boolean flag `isAffected` along with the original location data.
+
+---
+
+## On-Demand Check Handlers
+
+These functions are part of the API-driven workflow that checks a single location provided by a user.
+
+### `01-check-location-against-events` (`OnDemandCheckHandler`)
+
+- **Triggered by:** The `OnDemandCheckWorkflow` after a user makes a request to the API.
+- **Purpose:** Similar to the proactive `CheckLocationHandler`, this function takes a single location from the user's request and checks it against the DynamoDB events table.
+- **Output:** A JSON object containing the `isAffected` flag and details for the notification.
+
+---
+
+## Shared Handlers
+
+These are common functions reused across multiple workflows.
+
+### `send-notification` (`SendNotificationHandler`)
+
+- **Triggered by:** Both the `NotifyLocationsWorkflow` and the `OnDemandCheckWorkflow` if a location is found to be affected.
+- **Purpose:** Receives location and user details. It uses Amazon SES (Simple Email Service) to send an email notification to the user.
+- **Output:** The result of the SES API call.

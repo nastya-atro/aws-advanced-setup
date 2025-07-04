@@ -36,14 +36,22 @@ resource "aws_iam_policy" "check_service_s3" {
 # 4. IAM policy to allow starting the step function execution
 resource "aws_iam_policy" "check_service_sfn" {
   name        = "${var.project_name}-check-service-sfn-policy"
-  description = "Allows starting the step function execution"
+  description = "Allows starting and describing step function executions"
   policy = jsonencode({
     Version   = "2012-10-17",
     Statement = [
       {
+        # This statement allows the service to start the workflow.
         Action   = "states:StartExecution",
         Effect   = "Allow",
         Resource = aws_sfn_state_machine.on_demand_check_workflow.id
+      },
+      {
+        # This statement allows the service to check the status of any execution
+        # belonging to the specified state machine.
+        Action   = "states:DescribeExecution",
+        Effect   = "Allow",
+        Resource = "${replace(aws_sfn_state_machine.on_demand_check_workflow.id, "stateMachine", "execution")}:*"
       }
     ]
   })
