@@ -9,6 +9,7 @@ const moment = require("moment");
 
 const s3Client = new S3Client({});
 const BUCKET_NAME = process.env.BUCKET_NAME;
+// test sts to check github cicd workflow
 
 // New function to clear the directory
 const clearRawDataDirectory = async () => {
